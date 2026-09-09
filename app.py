@@ -262,130 +262,44 @@ app_ui = ui.page_sidebar(
         # ══ TAB 1: Reporte de Análisis Matemático ═══════════════
         ui.nav_panel("📘 Reporte de Análisis Matemático",
 
-            # ── FASE 1: Formulación del Modelo ──
+            # ── FASE 1: Variables del Modelo ──
             ui.HTML(f"""
             <div class="fase-box fase-1">
-              <div class="fase-title"><span class="fase-num">1</span>Formulación del Modelo (Función de Dos Variables)</div>
+              <div class="fase-title"><span class="fase-num">1</span>Variables del Modelo Matemático</div>
+              <p>Nuestro modelo utiliza una función matemática de dos variables para predecir el consumo de energía. Las variables son las siguientes:</p>
+              <ul>
+                <li><b>Variable Independiente (x):</b> Código de tarifa. Tú la controlas moviendo el primer slider (barra deslizante).</li>
+                <li><b>Variable Independiente (y):</b> Número de suministros. Tú la controlas moviendo el segundo slider.</li>
+                <li><b>Variable Dependiente (z):</b> Consumo promedio en kWh. Es el resultado que calcula la función dependiendo de los valores que elijas para <b>x</b> e <b>y</b>.</li>
+              </ul>
+            </div>
+            """),
 
-              <h5>Definición de la Función y Dominio</h5>
-              <p>Siguiendo la notación de las clases prácticas, planteamos una función de dos variables 
-              para modelar el comportamiento del consumo eléctrico:</p>
-
-              <div class="eq-inner">
-                \\[
-                f : \\mathbb{{R}}^2 \\to \\mathbb{{R}}
-                \\]
-                \\[
-                f(x, y) = z = \\beta_0 + \\beta_1 x + \\beta_2 y
-                \\]
-              </div>
-
-              <h5>Garantizando la Existencia de la Función (Dominio)</h5>
-              <p>Al ser una función polinómica de primer grado, el dominio matemático máximo es todo el plano.
-              Es decir, no hay denominadores ni raíces cuadradas que restrinjan la función matemáticamente:</p>
-              
+            # ── FASE 2: Dominio y Restricciones ──
+            ui.HTML(f"""
+            <div class="fase-box fase-2">
+              <div class="fase-title"><span class="fase-num">2</span>Dominio y Restricciones</div>
+              <h5>Dominio Matemático</h5>
+              <p>Matemáticamente, como es una función polinómica de primer grado (un plano plano), no tiene divisiones por cero ni raíces cuadradas. Por esto, el dominio matemático es todo el espacio bidimensional:</p>
               <div class="eq-inner" style="font-family: 'STIX Two Math', serif;">
                 \\[
                 Dom f = \\mathbb{{R}}^2 = \\{{ (x, y) \\in \\mathbb{{R}}^2 \\}}
                 \\]
               </div>
-
-              <p>Sin embargo, en nuestro <b>dominio aplicado al problema real</b>, las variables están restringidas 
-              por los datos físicos del sector eléctrico:</p>
+              
+              <h5>Restricciones del Problema (Realidad)</h5>
+              <p>Aunque matemáticamente podemos poner cualquier número, en la vida real <b>no existen suministros negativos ni infinitos</b>. Por lo tanto, nuestro dominio real está restringido por los datos físicos que hemos recolectado:</p>
               <ul>
-                <li><b>x</b> (Código de tarifa) \\(\\in [{X_MIN}, {X_MAX}]\\)</li>
-                <li><b>y</b> (Número de suministros) \\(\\in [{Y_MIN}, {Y_MAX}]\\)</li>
-                <li><b>z</b> (Consumo promedio en kWh), donde \\(\\exists z \\leftrightarrow \\forall (x,y) \\in Dom f\\)</li>
+                <li>La variable <b>x</b> está restringida al intervalo <b>[{X_MIN}, {X_MAX}]</b>.</li>
+                <li>La variable <b>y</b> está restringida al intervalo <b>[{Y_MIN}, {Y_MAX}]</b>.</li>
               </ul>
             </div>
             """),
 
-            # ── FASE 2: Optimización OLS ──
-            ui.HTML(f"""
-            <div class="fase-box fase-2">
-              <div class="fase-title"><span class="fase-num">2</span>Optimización — Mínimos Cuadrados Ordinarios (OLS)</div>
-
-              <h5>Objetivo de Optimización</h5>
-              <p>Para encontrar los coeficientes del plano, el método OLS busca el vector \\(\\boldsymbol{{\\beta}} = (\\beta_0, \\beta_1, \\beta_2)^T\\)
-              que <b>minimiza</b> los errores cuadráticos entre los valores reales de \\(z\\) y los calculados por la función:</p>
-
-              <div class="eq-inner">
-                \\[
-                \\min_{{\\boldsymbol{{\\beta}}}} \\; S(\\boldsymbol{{\\beta}})
-                = \\sum_{{i=1}}^{{n}} \\left( z_i - f(x_i, y_i) \\right)^2
-                \\]
-              </div>
-
-              <h5>Ecuación Matricial Normal</h5>
-              <p>La solución que garantiza la existencia de un mínimo global se obtiene resolviendo:</p>
-
-              <div class="eq-display" style="color:white;">
-                \\[
-                \\boxed{{\\;
-                \\boldsymbol{{\\beta}} = \\left( \\mathbf{{X}}^T \\mathbf{{X}} \\right)^{{-1}}
-                \\mathbf{{X}}^T \\mathbf{{Z}}
-                \\;}}
-                \\]
-              </div>
-            </div>
-            """),
-
-            # ── FASE 3: Ecuación del Plano ──
-            ui.HTML(f"""
-            <div class="fase-box fase-3">
-              <div class="fase-title"><span class="fase-num">3</span>Ecuación del Plano de Regresión — Resultado</div>
-
-              <h5>Forma General (Regla de Correspondencia)</h5>
-              <div class="eq-inner">
-                \\[
-                f(x, y) = z = \\beta_0 + \\beta_1 x + \\beta_2 y
-                \\]
-              </div>
-
-              <h5>Coeficientes Calculados</h5>
-              <div class="eq-display" style="color:white;">
-                \\[
-                \\boxed{{\\;
-                f(x, y) = z = {b0:.4f} \\;{s1_latex}\\; {abs(b1):.4f} x
-                \\;{s2_latex}\\; {abs(b2):.6f} y
-                \\;}}
-                \\]
-              </div>
-
-              <div class="chips">
-                <div class="chip">
-                  <div class="cl">β₀ Intercepto</div>
-                  <div class="cv">{b0:.4f}</div>
-                </div>
-                <div class="chip">
-                  <div class="cl">β₁ · x</div>
-                  <div class="cv">{b1:.4f}</div>
-                </div>
-                <div class="chip">
-                  <div class="cl">β₂ · y</div>
-                  <div class="cv">{b2:.6f}</div>
-                </div>
-                <div class="chip">
-                  <div class="cl">R² Ajuste</div>
-                  <div class="cv">{r2:.4f}</div>
-                </div>
-              </div>
-
-              <h5>Interpretación de Coeficientes (Derivadas Parciales)</h5>
-              <ul>
-                <li>\\(\\beta_1 = {b1:.4f}\\): derivada parcial
-                    \\(\\dfrac{{\\partial f}}{{\\partial x}} = {b1:.4f}\\).
-                    Por cada unidad de incremento en $x$ (manteniendo $y$ constante).</li>
-                <li>\\(\\beta_2 = {b2:.6f}\\): derivada parcial
-                    \\(\\dfrac{{\\partial f}}{{\\partial y}} = {b2:.6f}\\).
-                    Por cada unidad de incremento en $y$ (manteniendo $x$ constante).</li>
-              </ul>
-            </div>
-            """),
-
-            # ── FASE 4: Pronóstico Dinámico (reactivo) ──
-            ui.HTML('<div class="fase-box fase-4">'),
-            ui.HTML('<div class="fase-title"><span class="fase-num" style="background:linear-gradient(135deg,#d97706,#f59e0b);">4</span>Pronóstico Dinámico — Sustitución en Tiempo Real</div>'),
+            # ── FASE 3: Regla de Correspondencia y Evaluación ──
+            ui.HTML('<div class="fase-box fase-3">'),
+            ui.HTML('<div class="fase-title"><span class="fase-num" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">3</span>Regla de Correspondencia y Evaluación Dinámica</div>'),
+            ui.HTML('<p>Al mover los sliders en la barra lateral, estás eligiendo un nuevo par de valores <b>(x, y)</b>. El programa toma automáticamente la <b>regla de correspondencia</b> de nuestro modelo matemático y sustituye esas variables en la ecuación para encontrar el valor de la variable dependiente <b>z</b> (el consumo).</p>'),
             ui.output_ui("fase4_contenido"),
             ui.HTML('</div>'),
 
