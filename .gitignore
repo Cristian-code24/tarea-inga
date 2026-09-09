@@ -1,0 +1,6 @@
+venv*/
+venv_calculo3/
+__pycache__/
+*.pyc
+*.zip
+.env
