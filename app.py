@@ -326,7 +326,17 @@ app_ui = ui.page_sidebar(
 
         # ══ TAB 4: Superficie 3D y Nube de Puntos ═══════════════
         ui.nav_panel("🌐 Superficie 3D y Dominio",
-            ui.HTML('<div class="stt">Gráfica del Plano en ℝ³ y Puntos de Observación</div>'),
+            ui.HTML("""
+            <div class="fase-box fase-2" style="margin-top: 1rem;">
+              <div class="fase-title">Interpretación del Gráfico 3D</div>
+              <p>Este gráfico representa el modelo matemático completo en el espacio tridimensional (x, y, z):</p>
+              <ul>
+                <li><b>El Plano (Azul):</b> Es nuestra función matemática. Muestra todos los posibles resultados de consumo según la tarifa y suministros. Las líneas sobre el plano son <b>curvas de nivel</b>, que conectan puntos con el mismo consumo.</li>
+                <li><b>Puntos Grises:</b> Son los datos <b>reales</b> históricos que usamos para crear el modelo. Observa cómo flotan cerca del plano.</li>
+                <li><b>Punto Rojo (Diamante):</b> Es el punto <b>simulado</b>. Este punto se desliza sobre el plano azul cada vez que mueves los sliders de la izquierda, mostrando exactamente dónde se evalúa la función.</li>
+              </ul>
+            </div>
+            """),
             ui.HTML('<div class="chart-wrap">'),
             output_widget("plot_3d"),
             ui.HTML('</div>'),
@@ -571,7 +581,6 @@ def server(input, output, session):
     def plot_3d():
         xi, yi = float(input.x()), float(input.y())
         zp       = zhat()
-        res      = z_data - z_pred
 
         svx = np.linspace(x_data.min() - 3, x_data.max() + 3, 55)
         svy = np.linspace(y_data.min() - 300, y_data.max() + 300, 55)
@@ -579,31 +588,59 @@ def server(input, output, session):
         SZ = b0 + b1 * SX + b2 * SY
 
         fig = go.Figure()
+        
+        # 1. Plano f(x,y) con curvas de nivel
         fig.add_trace(go.Surface(
             x=SX, y=SY, z=SZ,
-            colorscale="Blues", opacity=0.60,
+            colorscale="Blues", opacity=0.75,
             name="Plano f(x,y)",
+            contours=dict(
+                z=dict(show=True, usecolormap=True, highlightcolor="limegreen", project_z=True)
+            )
         ))
+        
+        # 2. Datos Reales (Gris)
         fig.add_trace(go.Scatter3d(
             x=x_data, y=y_data, z=z_data,
-            mode="markers", marker=dict(size=7, color=res, colorscale="RdYlGn"),
+            mode="markers", 
+            marker=dict(size=6, color="#9ca3af", line=dict(color="#4b5563", width=1), opacity=0.8),
             name="Z Real",
+            hovertemplate="Tarifa: %{x}<br>Suministros: %{y}<br>Consumo Real: %{z} kWh<extra></extra>"
         ))
+        
+        # 3. Punto Simulado (Rojo)
         fig.add_trace(go.Scatter3d(
             x=[xi], y=[yi], z=[zp],
-            mode="markers+text", marker=dict(size=14, color="#ef4444", symbol="diamond"),
-            text=[f"z={zp:.1f}"], textposition="top center",
-            name="Simulado"
+            mode="markers+text", 
+            marker=dict(size=12, color="#ef4444", symbol="diamond", line=dict(color="#7f1d1d", width=2)),
+            text=[f"Simulado: {zp:.1f} kWh"], textposition="top center",
+            textfont=dict(color="#ef4444", size=14, family="Arial Black"),
+            name="Simulado f(x,y)",
+            hovertemplate="Tarifa: %{x}<br>Suministros: %{y}<br>Consumo Simulado: %{z:.2f} kWh<extra></extra>"
+        ))
+        
+        # 4. Línea de proyección para el punto simulado (caída al plano XY)
+        fig.add_trace(go.Scatter3d(
+            x=[xi, xi], y=[yi, yi], z=[0, zp],
+            mode="lines",
+            line=dict(color="#ef4444", width=3, dash="dot"),
+            showlegend=False,
+            hoverinfo="skip"
         ))
 
         fig.update_layout(
-            height=600,
+            height=650,
             scene=dict(
-                xaxis=dict(title="x (Tarifa)"),
-                yaxis=dict(title="y (Suministros)"),
-                zaxis=dict(title="z (Consumo)"),
+                xaxis=dict(title="x (Tarifa)", gridcolor="#e5e7eb", backgroundcolor="#f8fafc"),
+                yaxis=dict(title="y (Suministros)", gridcolor="#e5e7eb", backgroundcolor="#f8fafc"),
+                zaxis=dict(title="z (Consumo)", gridcolor="#e5e7eb", backgroundcolor="#f8fafc"),
+                camera=dict(
+                    eye=dict(x=1.6, y=-1.6, z=0.8) # Mejor ángulo de inicio
+                )
             ),
             paper_bgcolor="white",
+            legend=dict(yanchor="top", y=0.95, xanchor="left", x=0.05),
+            margin=dict(l=0, r=0, t=20, b=0)
         )
         return fig
 
